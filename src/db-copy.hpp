@@ -84,7 +84,10 @@ class db_deleter_by_id_t
 public:
     bool has_data() const noexcept { return !m_deletables.empty(); }
 
-    void add(osmid_t osm_id) { m_deletables.push_back(osm_id); }
+    void add(osmid_t osm_id, osmium::Timestamp timestamp)
+    {
+        m_deletables.emplace_back(osm_id, timestamp);
+    }
 
     void delete_rows(std::string const &table, std::string const &column,
                      pg_conn_t const &db_connection);
@@ -93,7 +96,7 @@ public:
 
 private:
     /// Vector with object to delete before copying
-    std::vector<osmid_t> m_deletables;
+    std::vector<std::pair<osmid_t, osmium::Timestamp>> m_deletables;
 };
 
 /**
@@ -111,16 +114,20 @@ class db_deleter_by_type_and_id_t
     {
         osmid_t osm_id;
         char osm_type;
+        osmium::Timestamp timestamp;
 
-        item_t(char t, osmid_t i) : osm_id(i), osm_type(t) {}
+        item_t(char t, osmid_t i, osmium::Timestamp ts)
+        : osm_id(i), osm_type(t), timestamp(ts)
+        {
+        }
     };
 
 public:
     bool has_data() const noexcept { return !m_deletables.empty(); }
 
-    void add(char type, osmid_t osm_id)
+    void add(char type, osmid_t osm_id, osmium::Timestamp timestamp)
     {
-        m_deletables.emplace_back(type, osm_id);
+        m_deletables.emplace_back(type, osm_id, timestamp);
         if (type != 'X') {
             m_has_type = true;
         }

@@ -83,8 +83,8 @@ TEST_CASE("db_copy_thread_t with db_deleter_by_id_t")
         SECTION("simple delete of existing rows")
         {
             cmd = cmd_copy_t{table};
-            cmd.add_deletable(223);
-            cmd.add_deletable(42);
+            cmd.add_deletable(223, 0);
+            cmd.add_deletable(42, 0);
 
             t.send_command(std::move(cmd));
             t.sync_and_wait();
@@ -96,7 +96,7 @@ TEST_CASE("db_copy_thread_t with db_deleter_by_id_t")
         SECTION("delete one and add another")
         {
             cmd = cmd_copy_t{table};
-            cmd.add_deletable(133);
+            cmd.add_deletable(133, 0);
             cmd.buffer += "134\n";
 
             t.send_command(std::move(cmd));
@@ -109,7 +109,7 @@ TEST_CASE("db_copy_thread_t with db_deleter_by_id_t")
         SECTION("delete one and add the same")
         {
             cmd = cmd_copy_t{table};
-            cmd.add_deletable(133);
+            cmd.add_deletable(133, 0);
             cmd.buffer += "133\n";
 
             t.send_command(std::move(cmd));
@@ -143,7 +143,7 @@ TEST_CASE("db_copy_thread_t with db_deleter_by_id_t")
         t.send_command(std::move(cmd));
 
         cmd = cmd_copy_t{table};
-        cmd.add_deletable(542);
+        cmd.add_deletable(542, 0);
         cmd.buffer += "12\n";
         t.send_command(std::move(cmd));
 

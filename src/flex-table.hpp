@@ -319,7 +319,8 @@ public:
         return &m_copy_mgr;
     }
 
-    void delete_rows_with(osmium::item_type type, osmid_t id);
+    void delete_rows_with(osmium::item_type type, osmid_t id,
+                          osmium::Timestamp timestamp);
 
     reprojection_t const &proj() const noexcept
     {

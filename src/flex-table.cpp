@@ -405,14 +405,15 @@ pg_result_t table_connection_t::get_geoms_by_id(pg_conn_t const &db_connection,
     return db_connection.exec_prepared_as_binary(stmt.c_str(), id);
 }
 
-void table_connection_t::delete_rows_with(osmium::item_type type, osmid_t id)
+void table_connection_t::delete_rows_with(osmium::item_type type, osmid_t id,
+                                          osmium::Timestamp timestamp)
 {
     m_copy_mgr.new_line(m_target);
 
     if (!table().has_multicolumn_id_index()) {
         type = osmium::item_type::undefined;
     }
-    m_copy_mgr.delete_object(type_to_char(type)[0], id);
+    m_copy_mgr.delete_object(type_to_char(type)[0], id, timestamp);
 }
 
 void table_connection_t::task_wait()

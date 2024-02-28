@@ -568,7 +568,7 @@ void middle_pgsql_t::node_delete(osmid_t osm_id)
 
     if (m_store_options.nodes && osm_id <= m_tables.nodes().max_id()) {
         m_db_copy.new_line(m_tables.nodes().copy_target());
-        m_db_copy.delete_object(osm_id);
+        m_db_copy.delete_object(osm_id, 0);
     }
 }
 
@@ -869,7 +869,7 @@ void middle_pgsql_t::way_delete(osmid_t osm_id)
 
     if (osm_id <= m_tables.ways().max_id()) {
         m_db_copy.new_line(m_tables.ways().copy_target());
-        m_db_copy.delete_object(osm_id);
+        m_db_copy.delete_object(osm_id, 0);
     }
 }
 
@@ -924,7 +924,7 @@ void middle_pgsql_t::relation_delete(osmid_t osm_id)
 
     if (osm_id <= m_tables.relations().max_id()) {
         m_db_copy.new_line(m_tables.relations().copy_target());
-        m_db_copy.delete_object(osm_id);
+        m_db_copy.delete_object(osm_id, 0);
     }
 }
 

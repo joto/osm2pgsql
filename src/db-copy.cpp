@@ -22,6 +22,20 @@ void db_deleter_by_id_t::delete_rows(std::string const &table,
                                      std::string const &column,
                                      pg_conn_t const &db_connection)
 {
+    for (auto [id, timestamp] : m_deletables) {
+        if (timestamp.valid()) {
+            auto const sql = fmt::format(
+                FMT_STRING("UPDATE {} SET ts_to = '{}' WHERE {} = {}"), table,
+                timestamp.to_iso(), column, id);
+            db_connection.exec(sql);
+        } else {
+            auto const sql = fmt::format(
+                FMT_STRING("DELETE FROM {} WHERE {} = {}"), table, column, id);
+            db_connection.exec(sql);
+        }
+    }
+
+#if 0
     fmt::memory_buffer sql;
     // Each deletable contributes an OSM ID and a comma. The highest node ID
     // currently has 10 digits, so 15 characters should do for a couple of years.
@@ -38,6 +52,7 @@ void db_deleter_by_id_t::delete_rows(std::string const &table,
 
     sql.push_back('\0');
     db_connection.exec(sql.data());
+#endif
 }
 
 void db_deleter_by_type_and_id_t::delete_rows(std::string const &table,
@@ -72,6 +87,7 @@ void db_deleter_by_type_and_id_t::delete_rows(std::string const &table,
                        " p.{} = t.osm_type::char(1) AND p.{} = t.osm_id",
                        type, column.c_str() + pos + 1);
     } else {
+#if 0
         fmt::format_to(std::back_inserter(sql),
                        FMT_STRING("DELETE FROM {} WHERE {} IN ("), table,
                        column);
@@ -80,6 +96,20 @@ void db_deleter_by_type_and_id_t::delete_rows(std::string const &table,
             format_to(std::back_inserter(sql), FMT_STRING("{},"), item.osm_id);
         }
         sql[sql.size() - 1] = ')';
+#endif
+        for (auto const &item : m_deletables) {
+            if (item.timestamp.valid()) {
+                auto const xsql = fmt::format(
+                    FMT_STRING("UPDATE {} SET ts_to = '{}' WHERE {} = {}"),
+                    table, item.timestamp.to_iso(), column, item.osm_id);
+                db_connection.exec(xsql);
+            } else {
+                auto const xsql =
+                    fmt::format(FMT_STRING("DELETE FROM {} WHERE {} = {}"),
+                                table, column, item.osm_id);
+                db_connection.exec(xsql);
+            }
+        }
     }
 
     sql.push_back('\0');
