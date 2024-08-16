@@ -115,7 +115,7 @@ public:
     virtual void wait() {}
 
     /// This is called for every added, changed or deleted node.
-    virtual void node(osmium::Node const &node) = 0;
+    virtual bool node(osmium::Node const &node) = 0;
 
     /// This is called for every added, changed or deleted way.
     virtual void way(osmium::Way const &way) = 0;

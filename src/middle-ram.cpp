@@ -189,7 +189,7 @@ bool middle_ram_t::get_object(osmium::item_type type, osmid_t id,
     return true;
 }
 
-void middle_ram_t::node(osmium::Node const &node)
+bool middle_ram_t::node(osmium::Node const &node)
 {
     assert(m_middle_state == middle_state::node);
     assert(node.visible());
@@ -206,6 +206,8 @@ void middle_ram_t::node(osmium::Node const &node)
         (!node.tags().empty() || m_store_options.untagged_nodes)) {
         store_object(node);
     }
+
+    return false;
 }
 
 void middle_ram_t::way(osmium::Way const &way)

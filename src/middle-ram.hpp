@@ -58,7 +58,7 @@ public:
 
     void stop() override;
 
-    void node(osmium::Node const &node) override;
+    bool node(osmium::Node const &node) override;
     void way(osmium::Way const &way) override;
     void relation(osmium::Relation const &) override;
 

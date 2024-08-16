@@ -505,18 +505,34 @@ std::size_t middle_query_pgsql_t::get_way_node_locations_db(
     return count;
 }
 
-void middle_pgsql_t::node(osmium::Node const &node)
+bool middle_pgsql_t::node(osmium::Node const &node)
 {
     assert(m_middle_state == middle_state::node);
 
     if (node.deleted()) {
         node_delete(node.id());
-    } else {
-        if (m_options->append) {
-            node_delete(node.id());
-        }
-        node_set(node);
+        return false;
     }
+
+    if (!m_options->append) {
+        node_set(node);
+        return false;
+    }
+
+    if (m_persistent_cache) {
+        auto const loc = get_node_location(node.id());
+        const bool location_has_changed = !loc.valid() || loc != node.location();
+
+        node_delete(node.id());
+        node_set(node);
+
+        return location_has_changed;
+    }
+
+    node_delete(node.id());
+    node_set(node);
+
+    return true;
 }
 
 void middle_pgsql_t::way(osmium::Way const &way) {
@@ -613,6 +629,36 @@ middle_query_pgsql_t::get_node_location_flatnodes(osmid_t id) const
 }
 
 osmium::Location middle_query_pgsql_t::get_node_location(osmid_t id) const
+{
+    auto const loc = m_cache->get(id);
+    if (loc.valid()) {
+        return loc;
+    }
+
+    return m_persistent_cache ? get_node_location_flatnodes(id)
+                              : get_node_location_db(id);
+}
+
+osmium::Location middle_pgsql_t::get_node_location_db(osmid_t id) const
+{
+    auto const res = m_db_connection.exec_prepared("get_node", id);
+    if (res.num_tuples() == 0) {
+        return osmium::Location{};
+    }
+
+    return osmium::Location{(int)std::strtol(res.get_value(0, 1), nullptr, 10),
+                            (int)std::strtol(res.get_value(0, 2), nullptr, 10)};
+}
+
+osmium::Location middle_pgsql_t::get_node_location_flatnodes(osmid_t id) const
+{
+    if (id >= 0) {
+        return m_persistent_cache->get(id);
+    }
+    return osmium::Location{};
+}
+
+osmium::Location middle_pgsql_t::get_node_location(osmid_t id) const
 {
     auto const loc = m_cache->get(id);
     if (loc.valid()) {
@@ -1321,6 +1367,11 @@ middle_pgsql_t::middle_pgsql_t(std::shared_ptr<thread_pool_t> thread_pool,
     m_tables.relations() = table_desc{*options, sql_for_relations()};
 
     m_users_table = table_desc{*options, sql_for_users(m_store_options)};
+
+/*    m_db_connection.exec(build_sql(
+        *m_options, "PREPARE get_node(int8) AS"
+                    " SELECT id, lon, lat FROM {schema}\"{prefix}_nodes\""
+                    " WHERE id = $1"));*/
 }
 
 void middle_pgsql_t::set_requirements(

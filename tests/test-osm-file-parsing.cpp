@@ -40,7 +40,7 @@ struct counting_middle_t : public middle_t
 
     void cleanup() {}
 
-    void node(osmium::Node const &node) override {
+    bool node(osmium::Node const &node) override {
         assert(m_middle_state == middle_state::node);
 
         if (m_append) {
@@ -48,9 +48,11 @@ struct counting_middle_t : public middle_t
             if (!node.deleted()) {
                 ++node_count.added;
             }
-            return;
+            return true;
         }
         ++node_count.added;
+
+        return true;
     }
 
     void way(osmium::Way const &way) override {

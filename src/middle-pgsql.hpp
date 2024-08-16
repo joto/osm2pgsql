@@ -104,7 +104,7 @@ struct middle_pgsql_t : public middle_t
 
     void wait() override;
 
-    void node(osmium::Node const &node) override;
+    bool node(osmium::Node const &node) override;
     void way(osmium::Way const &way) override;
     void relation(osmium::Relation const &rel) override;
 
@@ -179,6 +179,10 @@ struct middle_pgsql_t : public middle_t
     void set_requirements(output_requirements const &requirements) override;
 
 private:
+    osmium::Location get_node_location(osmid_t id) const;
+    osmium::Location get_node_location_flatnodes(osmid_t id) const;
+    osmium::Location get_node_location_db(osmid_t id) const;
+
     void node_set(osmium::Node const &node);
     void node_delete(osmid_t id);
 

@@ -51,7 +51,7 @@ void osmdata_t::node(osmium::Node const &node)
         }
     }
 
-    m_mid->node(node);
+    auto const has_changed_location = m_mid->node(node);
 
     if (node.deleted()) {
         m_output->node_delete(node.id());
@@ -70,7 +70,7 @@ void osmdata_t::node(osmium::Node const &node)
         // way or relation referencing it, so we don't have to add that node
         // to the list of changed nodes. If the input data doesn't contain
         // object versions this will still work, because then the version is 0.
-        if (node.version() != 1) {
+        if (node.version() != 1 && has_changed_location) {
             m_changed_nodes.push_back(node.id());
         }
     } else if (has_tags_or_attrs) {
