@@ -313,8 +313,8 @@ private:
             // when only few items need to be processed.
             log_info("Going over {} pending {}s", ids_queued, type);
 
-            for (auto const oid : list) {
-                (m_clones[0].get()->*function)(oid);
+            for (auto const &item : list) {
+                (m_clones[0].get()->*function)(item.id());
             }
             m_clones[0]->sync();
         } else {

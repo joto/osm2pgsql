@@ -44,8 +44,8 @@ public:
         assert(!ids.empty());
         std::string nodes;
 
-        for (auto const id : ids) {
-            nodes += fmt::format("n{},", id);
+        for (auto const &item : ids) {
+            nodes += fmt::format("n{},", item.id());
         }
 
         nodes.resize(nodes.size() - 1);

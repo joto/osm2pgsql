@@ -18,7 +18,45 @@
 
 #include "osmtypes.hpp"
 
+#include <tuple>
 #include <vector>
+
+class id_ts_t
+{
+public:
+    id_ts_t(osmid_t id) noexcept : m_id(id) {}
+
+    id_ts_t(osmid_t id, osmium::Timestamp timestamp) noexcept
+    : m_id(id)//, m_timestamp(timestamp) XXX
+    {
+    }
+
+    osmid_t id() const noexcept { return m_id; }
+
+    osmium::Timestamp timestamp() const noexcept { return m_timestamp; }
+
+    friend bool operator==(id_ts_t const &lhs, id_ts_t const &rhs) noexcept
+    {
+        return lhs.m_id == rhs.m_id;
+    }
+
+    friend bool operator!=(id_ts_t const &lhs, id_ts_t const &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
+
+    friend bool operator<(id_ts_t const &lhs, id_ts_t const &rhs) noexcept
+    {
+        return std::tie(lhs.m_id, lhs.m_timestamp) <
+               std::tie(rhs.m_id, rhs.m_timestamp);
+    }
+
+private:
+    osmid_t m_id;
+    osmium::Timestamp m_timestamp;
+}; // class id_ts_t
+
+bool operator<(osmid_t id, id_ts_t const &rhs) noexcept;
 
 /**
  * A list of OSM object ids. Internally this is a vector of ids.
@@ -34,7 +72,10 @@ public:
     idlist_t() = default;
     ~idlist_t() noexcept = default;
 
-    idlist_t(std::initializer_list<osmid_t> ids) : m_list(ids) {}
+    idlist_t(std::initializer_list<osmid_t> ids)
+    : m_list(ids.begin(), ids.end())
+    {
+    }
 
     idlist_t(idlist_t const &) = delete;
     idlist_t &operator=(idlist_t const &) = delete;
@@ -46,21 +87,24 @@ public:
 
     std::size_t size() const noexcept { return m_list.size(); }
 
-    auto begin() const noexcept { return m_list.begin(); }
+    auto begin() const noexcept { return m_list.cbegin(); }
 
-    auto end() const noexcept { return m_list.end(); }
+    auto end() const noexcept { return m_list.cend(); }
 
     auto cbegin() const noexcept { return m_list.cbegin(); }
 
     auto cend() const noexcept { return m_list.cend(); }
 
-    osmid_t operator[](std::size_t n) const noexcept { return m_list[n]; }
+    osmid_t operator[](std::size_t n) const noexcept
+    {
+        return m_list[n].id();
+    }
 
     void clear() noexcept { m_list.clear(); }
 
     void shrink_to_fit() noexcept { m_list.shrink_to_fit(); }
 
-    void push_back(osmid_t id) { m_list.push_back(id); }
+    void push_back(osmid_t id) { m_list.emplace_back(id, osmium::Timestamp{}); }
 
     void reserve(std::size_t size) { m_list.reserve(size); }
 
@@ -109,7 +153,7 @@ public:
     void remove_ids_if_in(idlist_t const &other);
 
 private:
-    std::vector<osmid_t> m_list;
+    std::vector<id_ts_t> m_list;
 
 }; // class idlist_t
 

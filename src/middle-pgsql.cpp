@@ -50,8 +50,8 @@ void send_id_list(pg_conn_t const &db_connection, std::string const &table,
                   idlist_t const &ids)
 {
     std::string data;
-    for (auto const id : ids) {
-        fmt::format_to(std::back_inserter(data), FMT_STRING("{}\n"), id);
+    for (auto const &item : ids) {
+        fmt::format_to(std::back_inserter(data), FMT_STRING("{}\n"), item.id());
     }
 
     auto const sql = fmt::format("COPY {} FROM STDIN", table);

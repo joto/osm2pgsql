@@ -14,10 +14,15 @@
 #include <iterator>
 #include <utility>
 
+bool operator<(osmid_t id, id_ts_t const &rhs) noexcept
+{
+    return id < rhs.id();
+}
+
 osmid_t idlist_t::pop_id()
 {
     assert(!m_list.empty());
-    auto const id = m_list.back();
+    auto const id = m_list.back().id();
     m_list.pop_back();
     return id;
 }
@@ -36,7 +41,7 @@ void idlist_t::sort_unique()
 
 void idlist_t::merge_sorted(idlist_t const &other)
 {
-    std::vector<osmid_t> new_list;
+    std::vector<id_ts_t> new_list;
 
     new_list.reserve(m_list.size() + other.m_list.size());
     std::set_union(m_list.cbegin(), m_list.cend(), other.m_list.cbegin(),
@@ -48,7 +53,7 @@ void idlist_t::merge_sorted(idlist_t const &other)
 
 void idlist_t::remove_ids_if_in(idlist_t const &other)
 {
-    std::vector<osmid_t> new_list;
+    std::vector<id_ts_t> new_list;
 
     new_list.reserve(m_list.size());
     std::set_difference(m_list.cbegin(), m_list.cend(), other.m_list.cbegin(),

@@ -1582,9 +1582,9 @@ void output_flex_t::reprocess_marked()
         osmium::memory::Buffer node_buffer{
             1024, osmium::memory::Buffer::auto_grow::yes};
 
-        for (osmid_t const id : *m_stage2_node_ids) {
-            if (middle().node_get(id, &node_buffer)) {
-                node_delete(id, 0);
+        for (auto const &item : *m_stage2_node_ids) {
+            if (middle().node_get(item.id(), &node_buffer)) {
+                node_delete(item.id(), 0);
                 if (m_process_node) {
                     auto const &node = node_buffer.get<osmium::Node>(0);
                     m_context_node = &node;
@@ -1600,11 +1600,11 @@ void output_flex_t::reprocess_marked()
 
     log_info("There are {} ways to reprocess...", m_stage2_way_ids->size());
 
-    for (osmid_t const id : *m_stage2_way_ids) {
-        if (!m_way_cache.init(middle(), id)) {
+    for (auto const &item : *m_stage2_way_ids) {
+        if (!m_way_cache.init(middle(), item.id())) {
             continue;
         }
-        way_delete(id, 0); // XXX
+        way_delete(item.id(), 0); // XXX
         if (m_process_way) {
             get_mutex_and_call_lua_function(m_process_way, m_way_cache.get());
         }
